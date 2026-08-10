@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Co-Simulation of a Quadruped Robot using MSC ADAMS and Simulink — Samarth Sachan</title>
+  <meta name="description" content="How I built an ADAMS–MATLAB co-simulation framework for IIT Kanpur's Svan M2 quadruped robot, implemented a balance force controller, and validated it on push-up and trot gaits." />
+  <meta name="theme-color" content="#050508" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="article" />
+  <meta property="og:title"       content="Co-Simulation of a Quadruped Robot using MSC ADAMS and Simulink" />
+  <meta property="og:description" content="How I built an ADAMS–MATLAB co-simulation framework for IIT Kanpur's Svan M2 quadruped robot, implemented a balance force controller, and validated it on push-up and trot gaits." />
+  <meta property="og:url"         content="https://samarthsachan.github.io/thesis-blog.html" />
+  <meta property="og:site_name"   content="Samarth Sachan" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="favicon.svg" sizes="any" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets: shared design system first, then blog-specific -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="blog.css" />
+</head>
+<body>
+
+<!-- Skip to content -->
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<!-- Top bar -->
+<nav class="topbar" aria-label="Blog navigation">
+  <a href="index.html" class="topbar-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to portfolio
+  </a>
+  <a href="assets/docs/mtech-thesis.pdf" target="_blank" rel="noopener noreferrer" class="topbar-pdf" aria-label="Full Thesis PDF (opens in new tab)">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Full Thesis PDF
+  </a>
+</nav>
+
+<main id="main-content">
+
+<!-- Hero -->
+<header class="blog-hero">
+  <p class="blog-kicker">M.Tech Thesis · IIT Kanpur · 2023–2024 · All India Rank 2025</p>
+  <h1 class="blog-title">Co-Simulation of a Quadruped Robot using MSC ADAMS and Simulink</h1>
+  <p class="blog-subtitle">
+    How I built a high-fidelity co-simulation framework to design and validate controllers for India's first commercial quadruped — entirely in software, before touching the hardware.
+  </p>
+  <div class="blog-meta">
+    <span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+      Samarth Sachan · Amritanshu Manu · Shakti Singh Gupta
+    </span>
+    <span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      7 min read
+    </span>
+    <span>IIT Kanpur &amp; xTerra Robotics</span>
+  </div>
+  <div class="blog-tags">
+    <span class="blog-tag">MSC ADAMS</span>
+    <span class="blog-tag">MATLAB/Simulink</span>
+    <span class="blog-tag">Quadruped Robotics</span>
+    <span class="blog-tag">Balance Force Controller</span>
+    <span class="blog-tag">Sim-to-Real</span>
+    <span class="blog-tag">Co-Simulation</span>
+  </div>
+</header>
+
+<!-- Article -->
+<article class="blog-body">
+
+  <h2>The Problem: Simulating Legged Robots is Hard</h2>
+  <p>
+    Quadruped robots are four-legged machines that can traverse uneven terrain — unlike wheeled robots, which are limited to flat surfaces. But simulating them is genuinely difficult. Their dynamics are high-dimensional (18 degrees of freedom), and the physics of foot–ground contact keeps switching between continuous swing phases and discrete touchdown or lift-off events. These discontinuities produce non-linearities in contact forces that most standard simulators handle poorly.
+  </p>
+  <p>
+    If you get the contact model wrong in simulation, everything built on top of it — your motion planner, your controller, your stability analysis — is built on sand. A controller that works in a badly-modelled simulator has no guarantee of working on the real machine.
+  </p>
+  <p>
+    This paper addresses that problem by building a <strong>co-simulation framework</strong> that pairs <strong>MSC ADAMS</strong> (a high-fidelity multibody dynamics solver used in automotive and aerospace industries) with <strong>MATLAB/Simulink</strong> for control. ADAMS handles the robot's forward dynamics and contact physics accurately. MATLAB handles the control algorithms. Together, they give us a safe, reproducible environment to design and test controllers before deploying them on the Svan M2 — India's first commercial quadruped robot, developed by xTerra Robotics and used at IIT Kanpur's Mobile Robotics Laboratory.
+  </p>
+
+  <h2>The Robot: Svan M2</h2>
+  <p>
+    The Svan M2 is an 11.3 kg medium-sized quadruped that uses quasi-direct drive actuators, giving it high dynamic maneuverability. We model it with an <strong>18 DOF configuration</strong>: each of the four legs has three actuated revolute joints, and the floating torso adds six unactuated DOFs.
+  </p>
+
+  <p class="inset">
+    <strong>HAA</strong> — Hip Abduction-Adduction (controls lateral leg swing)<br>
+    <strong>HFE</strong> — Hip Flexion-Extension (drives the leg forward and backward)<br>
+    <strong>KFE</strong> — Knee Flexion-Extension (controls leg extension)
+  </p>
+
+  <p>
+    The body frame is placed at the centre of mass (CoM) of the torso. The four feet are labelled FR (front right), FL (front left), RL (rear left), and RR (rear right), with the forward direction along X.
+  </p>
+
+  <figure class="blog-figure">
+    <img src="assets/blog/robot-schematic.png" alt="Schematic diagram of the 18-DOF quadruped robot model" loading="lazy" />
+    <figcaption>Fig. 2 — Schematic of the quadruped robot model. Each leg has three joints: HAA, HFE, and KFE. The body frame sits at the CoM of the torso; forward direction is X.</figcaption>
+  </figure>
+
+  <table class="param-table">
+    <thead><tr><th>Parameter</th><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Height</td><td><em>h</em></td><td>0.25 m</td></tr>
+      <tr><td>Base length</td><td><em>L</em></td><td>0.40 m</td></tr>
+      <tr><td>Base width</td><td><em>W</em></td><td>0.12 m</td></tr>
+      <tr><td>Hip length</td><td><em>l<sub>h</sub></em></td><td>0.08 m</td></tr>
+      <tr><td>Thigh length</td><td><em>l<sub>t</sub></em></td><td>0.19 m</td></tr>
+      <tr><td>Shank length</td><td><em>l<sub>s</sub></em></td><td>0.16 m</td></tr>
+      <tr><td>Total mass</td><td><em>m</em><sub>total</sub></td><td>11.3 kg</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Building the ADAMS Model</h2>
+  <p>
+    The robot's CAD geometry was imported into ADAMS directly from SolidWorks. To keep the simulation tractable, parts were merged where possible — retaining structural detail while reducing body count. The final ADAMS model consists of <strong>13 rigid bodies</strong>: the torso, plus the hip, thigh, and shank for each of the four legs.
+  </p>
+
+  <figure class="blog-figure">
+    <img src="assets/blog/robot-adams-model.png" alt="Quadruped robot model imported in ADAMS showing colour-coded rigid bodies" loading="lazy" />
+    <figcaption>Fig. 3 — Svan M2 in ADAMS. The model was imported from SolidWorks and simplified to 13 bodies. CoM height is initialised at 0.25 m; hip links are kept parallel to the torso.</figcaption>
+  </figure>
+
+  <p>Three modelling assumptions keep the simulation clean:</p>
+  <p class="inset">
+    <strong>1. M-configuration leg model</strong> — the 18 DOF M-config preserves the joint topology of the actual hardware.<br>
+    <strong>2. Frictionless revolute joints</strong> — all 12 leg joints are treated as ideal revolutes, ignoring internal joint friction.<br>
+    <strong>3. Rigid bodies</strong> — legs and torso are modelled as rigid; structural compliance is ignored.
+  </p>
+
+  <h2>The Co-Simulation Framework</h2>
+  <p>
+    The framework divides responsibilities cleanly: <strong>ADAMS owns the physics</strong>, <strong>MATLAB owns the control</strong>. At each fixed communication interval, the two solvers exchange data and proceed independently — ADAMS computing forward dynamics given current joint torques, MATLAB computing new joint torques given the current robot state.
+  </p>
+  <p>
+    The motion planner (implemented in MATLAB using Raibert's heuristics) generates reference trajectories: desired base position, orientation, foot placements, velocity profiles, and contact state. The controller consumes this to produce joint torques. ADAMS receives those torques, solves the forward dynamics, and feeds the updated robot state back to MATLAB for the next control cycle.
+  </p>
+
+  <figure class="blog-figure">
+    <img src="assets/blog/cosim-flowchart.png" alt="Flowchart of the co-simulation loop between motion planner, controller and ADAMS" loading="lazy" />
+    <figcaption>Fig. 4 — Co-simulation flowchart. The motion planner produces reference data; the Simulink controller computes joint torques; ADAMS solves forward dynamics and returns the updated state. This loop repeats every timestep (0.01 s).</figcaption>
+  </figure>
+
+  <p>
+    The technical bridge is the <strong>ADAMS Controls Plant Export</strong> — a tool that generates an <code>adams_sub</code> Simulink block with input ports for joint torques and output ports for robot state. A C++ solver is used with a non-linear analysis type. Both solvers hold their inputs constant within each communication interval, solve their own equations, then hand off updated values before advancing to the next step.
+  </p>
+
+  <div class="callout">
+    <p><strong>Why ADAMS over MuJoCo or Gazebo?</strong> General-purpose robotics simulators are fast and RL-friendly, but make simplifying assumptions about contact physics. ADAMS is an industrial-grade multibody dynamics tool — its contact modelling is physically accurate enough that the same parameter choices carry meaning when you move to hardware.</p>
+  </div>
+
+  <h2>Control Architecture: Balance Force Controller</h2>
+  <p>
+    The core control question for a quadruped is: given a desired body motion, what forces should the stance feet exert on the ground? The <strong>balance force controller</strong> answers this by formulating it as an optimisation problem.
+  </p>
+  <p>
+    The controller uses the <strong>Single Rigid Body Dynamics (SRBD)</strong> model, which approximates the full 18 DOF robot as a single rigid body carrying the combined mass and inertia. This is valid for the Svan M2 because the legs are lightweight relative to the torso — leg inertia contributes little to the overall body dynamics. Under SRBD, the relationship between foot contact forces and CoM acceleration is <em>linear</em>, which makes the optimisation problem tractable.
+  </p>
+  <p>
+    The controller finds the optimal ground reaction forces at each stance foot by solving a <strong>Quadratic Program (QP)</strong> at every timestep:
+  </p>
+
+  <div class="eq-block">
+    <span class="eq-label">(8)</span>
+    F* = min<sub>F ∈ ℝ¹²</sub> &nbsp;(AF − b<sub>d</sub>)<sup>T</sup> S (AF − b<sub>d</sub>) + α‖F‖² + β‖F − F*<sub>prev</sub>‖²<br>
+    subject to: &nbsp; CF ≤ d
+  </div>
+
+  <p>The three objective terms each serve a distinct purpose:</p>
+  <p class="inset">
+    <strong>Term 1 — Tracking:</strong> minimises the error between actual CoM dynamics (AF) and the desired wrench b<sub>d</sub>. The weight matrix S lets you prioritise rotational vs. translational control independently.<br>
+    <strong>Term 2 — Regularisation:</strong> penalises unnecessarily large forces, weighted by α. Keeps the solution physically reasonable.<br>
+    <strong>Term 3 — Smoothness:</strong> penalises sudden jumps from the previous solution F*<sub>prev</sub>, weighted by β. Prevents torque chattering.
+  </p>
+
+  <p>
+    The constraint <strong>CF ≤ d</strong> enforces the <strong>friction cone</strong> at each foot, ensuring the optimised forces lie within feasible bounds so the feet don't slip. The bounds switch automatically between support-leg and swing-leg modes based on the scheduled contact state. The resulting forces are converted to joint torques via the contact Jacobian and combined with feedforward torques from the inverse dynamics model.
+  </p>
+
+  <figure class="blog-figure">
+    <img src="assets/blog/balance-force-controller.jpg" alt="Balance force controller block diagram showing SRBD, QP optimiser, torque conversion and ADAMS plant" loading="lazy" />
+    <figcaption>Fig. 7 — Balance force controller schematic. Inputs from the motion planner flow through the SRBD model and QP optimiser to produce optimal contact forces F*, which are converted to joint torques τ and fed into the ADAMS robot model.</figcaption>
+  </figure>
+
+  <h2>Results</h2>
+  <p>
+    Simulations were run in MATLAB 2023 and ADAMS 2023.2 with a communication timestep of 0.01 s. Two gaits were validated: a vertical <strong>push-up</strong> to test height tracking and joint angle control, and a <strong>trot</strong> to validate a dynamic diagonally-paired gait on flat ground.
+  </p>
+
+  <h3>Push-Up</h3>
+  <p>
+    The push-up drives the robot's CoM along a sinusoidal vertical trajectory, with all four feet in constant contact. This isolates the controller's ability to track height and regulate joint angles without the complexity of contact switching.
+  </p>
+
+  <div class="fig-row">
+    <figure class="blog-figure">
+      <img src="assets/blog/pushup/contact-force-z.png" alt="Normal contact force in Z direction on FR leg during push-up" loading="lazy" />
+      <figcaption>Normal contact force (Fz) on the FR leg during push-up. Force peaks at ~33 N when the robot is at its lowest — consistent with the total weight of 113 N shared across four legs.</figcaption>
+    </figure>
+    <figure class="blog-figure">
+      <img src="assets/blog/pushup/joint-angle-tracking.png" alt="HFE and KFE joint angle tracking on FR leg during push-up" loading="lazy" />
+      <figcaption>HFE and KFE joint angle tracking on the FR leg. The controller closely follows the reference trajectories — confirming the feedforward torques from the inverse dynamics are correct.</figcaption>
+    </figure>
+  </div>
+
+  <p>
+    Contact forces on the FR leg range from 20 N to 33 N over the push-up cycle, peaking at the robot's lowest position. This matches the expected physics: when the CoM is lowest, the legs are most compressed and the normal forces peak. Joint angle tracking for HFE and KFE closely follows the reference, confirming the torque commands are working.
+  </p>
+
+  <h3>Trot</h3>
+  <p>
+    The trot is a symmetric two-beat gait where diagonal leg pairs (FR+RL, FL+RR) move together. It is the most common dynamic gait for quadrupeds and the most demanding to simulate — contact switches at every half-cycle, and the CoM must stay stable throughout. In our simulation, the robot trots in the forward (X) direction using an open-loop heuristic motion planner.
+  </p>
+
+  <figure class="blog-figure">
+    <img src="assets/blog/trot/com-position-tracking.png" alt="CoM x-position tracking and error during trot" loading="lazy" />
+    <figcaption>Fig. 12 — CoM position tracking in X during trot. The actual trajectory (red) follows the reference (green) closely early in the motion. Error accumulates over time — a direct consequence of the open-loop planner, which cannot correct for real-time deviations in foot placement.</figcaption>
+  </figure>
+
+  <div class="fig-row">
+    <figure class="blog-figure">
+      <img src="assets/blog/trot/contact-forces-fr-rr.png" alt="Normal contact forces on FR and RR legs during trot" loading="lazy" />
+      <figcaption>Normal contact forces on FR and RR legs. The graph reveals brief double-support phases — both feet simultaneously in contact — not scheduled by the motion planner. A known artefact of open-loop timing imprecision.</figcaption>
+    </figure>
+    <figure class="blog-figure">
+      <img src="assets/blog/trot/contact-friction-fr.png" alt="Normal and friction forces on FR foot during trot" loading="lazy" />
+      <figcaption>Normal (Fz) and friction (Fx) forces on the FR foot. Friction opposes motion at initial contact (as expected), then reverses as the foot grips and propels the robot — matching the expected physics of foot–ground interaction.</figcaption>
+    </figure>
+  </div>
+
+  <p>
+    The contact force plots surface a key physical detail: there are moments where FR and RR are simultaneously in contact with the ground — an unscheduled double-support phase caused by timing imprecision in the open-loop planner. The friction force behaviour on FR is physically correct: it opposes the direction of motion on impact, then reverses as the foot comes to rest and provides forward propulsion.
+  </p>
+
+  <div class="callout">
+    <p><strong>The main limitation of the trot:</strong> the accumulating CoM tracking error is a direct consequence of open-loop motion planning. The planner computes a fixed foot placement schedule with no knowledge of what the robot actually did. A reactive controller — one that updates foot placements based on real-time CoM state — is the natural next step, and is where modern legged locomotion research (MIT Cheetah, ANYmal, Boston Dynamics Atlas) focuses.</p>
+  </div>
+
+  <h2>What's Next</h2>
+  <p>
+    The co-simulation framework built here gives a solid foundation for more advanced work. The three most important open directions are:
+  </p>
+  <p class="inset">
+    <strong>Reactive motion planner</strong> — replace the heuristic open-loop planner with one that updates foot placements in real time using the estimated CoM state. This directly addresses the trot tracking error.<br>
+    <strong>Hardware validation</strong> — run the same trajectories on the physical Svan M2, log IMU and encoder data, and compare directly against ADAMS output to properly close the sim-to-real loop.<br>
+    <strong>On-board state estimation</strong> — the current implementation uses ground-truth torso pose from ADAMS. Real hardware requires a floating-base EKF or similar estimator to recover this from sensors alone.
+  </p>
+  <p>
+    This research was funded by DRDO under the CARS programme.
+  </p>
+
+</article>
+
+<!-- Footer CTA -->
+<div class="blog-footer-cta">
+  <a href="assets/docs/mtech-thesis.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-primary" aria-label="Download Full Thesis PDF (opens in new tab)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Download Full Thesis PDF
+  </a>
+  <a href="index.html" class="btn btn-outline">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Portfolio
+  </a>
+</div>
+
+</main><!-- /main -->
+
+</body>
+</html>

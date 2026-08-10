@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Background -->
+  <rect width="100" height="100" rx="18" fill="#050508"/>
+  <!-- SS letters -->
+  <text
+    x="50" y="62"
+    font-family="Inter, system-ui, sans-serif"
+    font-size="46"
+    font-weight="800"
+    text-anchor="middle"
+    letter-spacing="-2"
+    fill="#E4EAF4"
+  >SS</text>
+  <!-- Accent dot -->
+  <circle cx="76" cy="70" r="5" fill="#0EA5E9"/>
+</svg>
