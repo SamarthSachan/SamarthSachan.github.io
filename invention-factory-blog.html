@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manhole Cleaning Machine — Invention Factory — Samarth Sachan</title>
+  <meta name="description" content="A short account of designing a manhole cleaning machine at Invention Factory, IIT Kanpur — an Archimedean-screw device built to end manual scavenging." />
+  <meta name="theme-color" content="#050508" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="article" />
+  <meta property="og:title"       content="Manhole Cleaning Machine — Invention Factory" />
+  <meta property="og:description" content="A short account of designing a manhole cleaning machine at Invention Factory, IIT Kanpur — an Archimedean-screw device built to end manual scavenging." />
+  <meta property="og:url"         content="https://samarthsachan.github.io/invention-factory-blog.html" />
+  <meta property="og:site_name"   content="Samarth Sachan" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="favicon.svg" sizes="any" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets: shared design system first, then blog-specific -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="blog.css" />
+</head>
+<body>
+
+<!-- Skip to content -->
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<!-- Top bar -->
+<nav class="topbar" aria-label="Blog navigation">
+  <a href="index.html" class="topbar-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to portfolio
+  </a>
+</nav>
+
+<main id="main-content">
+
+<!-- Hero -->
+<header class="blog-hero">
+  <p class="blog-kicker">Invention Factory · IIT Kanpur · 2022</p>
+  <h1 class="blog-title">Manhole Cleaning Machine</h1>
+  <p class="blog-subtitle">
+    Sewer pipes get clogged, and there's no effective, affordable way to clear them — so people are forced to go inside the manhole, risking their lives. We built a machine to remove that need.
+  </p>
+  <div class="blog-meta">
+    <span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+      Samarth Sachan
+    </span>
+    <span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      2 min read
+    </span>
+    <span>IIT Kanpur</span>
+  </div>
+  <div class="blog-tags">
+    <span class="blog-tag">Hardware Design</span>
+    <span class="blog-tag">Archimedean Screw</span>
+    <span class="blog-tag">Manual Scavenging</span>
+  </div>
+</header>
+
+<!-- Article -->
+<article class="blog-body">
+
+  <h2>The Problem</h2>
+  <p>
+    Manual scavenging — people entering manholes by hand to clear sewage clogs — still employs an estimated <strong>1.5 million</strong> cleaners in India. The average lifespan of a manual scavenger is just <strong>45 years</strong>, a consequence of toxic working conditions and constant exposure to hazardous gases. There was no effective, affordable way to clear a clogged sewer line without sending a person down into it.
+  </p>
+
+  <figure class="blog-figure">
+    <img src="assets/blog_invention_factory/device-render.png" alt="Render of the manhole cleaning machine" loading="lazy" />
+    <figcaption>Our invention — a device that unclogs the sewer line without risking a person's life.</figcaption>
+  </figure>
+
+  <h2>The Idea</h2>
+  <p>
+    The device is placed on top of a manhole and lowered inside until it aligns with the sewage line. Once aligned, the operator switches on a motor that drives a horizontal helical screw with a pointed end, which drills through the clog. The drilling debris is transported up through a guiding pipe to the surface, where it's collected and disposed of.
+  </p>
+
+  <video class="blog-figure" controls playsinline preload="metadata" style="width:100%; border-radius: 8px;">
+    <source src="assets/blog_invention_factory/invention-animation.mp4" type="video/mp4" />
+  </video>
+  <p class="blog-figure-caption" style="text-align:center; font-size:.82rem; color:var(--muted); margin-top:-8px;">
+    CAD animation of the Archimedean screw drilling through a clog and clearing the debris.
+  </p>
+
+  <h2>Why Not Existing Solutions</h2>
+  <p>
+    A few alternatives already exist, but each falls short. The <strong>Bandicoot robot</strong> costs around ₹32 lakh and is difficult to train workers on. <strong>Sewer suction trucks</strong> are bulky, expensive, and can't pump out dried sludge. <strong>Water-jet trucks</strong> only flush the clog further down the line instead of removing it, wasting large amounts of water in the process.
+  </p>
+
+  <h2>Design</h2>
+  <p>
+    The machine is engineered to be segmented, so sections can be added or removed to match the depth of a given manhole.
+  </p>
+
+  <figure class="blog-figure">
+    <img src="assets/blog_invention_factory/exploded-view.png" alt="Exploded view of the manhole cleaning machine showing motor, flexible cable, stand, container, cap, spool, power transfer belt, and segmented horizontal and vertical Archimedean screws" loading="lazy" />
+    <figcaption>Exploded view — motor, flexible cable, stand, container, cap, spool, power-transfer belt, and the segmented horizontal and vertical Archimedean screws.</figcaption>
+  </figure>
+
+  <h2>Outcome</h2>
+  <p>
+    The project was selected among the <strong>top 10 teams from 23 IITs</strong> at Invention Factory, and patent applications were filed in <strong>India and the United States</strong>. The goal throughout was simple: clean the manhole without anyone having to go down inside it — eliminating manual scavenging and the risk that comes with it.
+  </p>
+
+</article>
+
+<!-- Footer CTA -->
+<div class="blog-footer-cta">
+  <a href="index.html" class="btn btn-outline">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Portfolio
+  </a>
+</div>
+
+</main><!-- /main -->
+
+</body>
+</html>
